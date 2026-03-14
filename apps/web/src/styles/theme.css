@@ -1,0 +1,476 @@
+/* ==========================================================================
+   AI Rollout Lab – Native CSS design system
+   Layers: reset → tokens → layout → components → utilities
+   OKLCH, container queries, :has(), subgrid, nesting
+   ========================================================================== */
+
+@layer reset, tokens, layout, components, utilities;
+
+/* --------------------------------------------------------------------------
+   Reset (minimal)
+   -------------------------------------------------------------------------- */
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  ul[class],
+  ol[class] {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Design tokens (OKLCH)
+   -------------------------------------------------------------------------- */
+@layer tokens {
+  :root {
+    /* Colors – OKLCH */
+    --color-bg-base: oklch(0.09 0.02 265);
+    --color-bg-elevated: oklch(0.14 0.02 265 / 0.85);
+    --color-bg-elevated-hover: oklch(0.16 0.02 265);
+    --color-surface: oklch(0.18 0.02 265 / 0.6);
+    --color-surface-border: oklch(0.55 0.02 255 / 0.25);
+    --color-surface-border-hover: oklch(0.65 0.08 250 / 0.5);
+    --color-text: oklch(0.92 0.01 255);
+    --color-text-muted: oklch(0.65 0.02 255);
+    --color-text-subtle: oklch(0.52 0.02 255);
+    --color-accent: oklch(0.55 0.2 255);
+    --color-accent-soft: oklch(0.7 0.12 255);
+    --color-success: oklch(0.72 0.18 160);
+    --color-success-soft: oklch(0.75 0.12 160);
+    --color-error: oklch(0.65 0.2 25);
+    --color-error-soft: oklch(0.7 0.12 25);
+    --color-error-border: oklch(0.65 0.15 25 / 0.4);
+    --color-focus-ring: oklch(0.6 0.2 255);
+
+    /* Spacing */
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.25rem;
+    --space-6: 1.5rem;
+    --space-8: 2rem;
+    --space-10: 2.5rem;
+
+    /* Radii */
+    --radius-sm: 4px;
+    --radius-md: 0.5rem;
+    --radius-lg: 0.75rem;
+    --radius-full: 9999px;
+
+    /* Typography */
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --text-xs: 0.7rem;
+    --text-sm: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.1rem;
+    --text-xl: 1.5rem;
+    --text-2xl: 1.75rem;
+    --leading-tight: 1.1;
+    --leading-normal: 1.5;
+    --tracking-wide: 0.2em;
+    --tracking-tag: 0.05em;
+
+    /* Shadows */
+    --shadow-glow: 0 0 0 1px oklch(0.15 0.02 265 / 0.9);
+    --shadow-card: 0 24px 80px oklch(0.1 0.02 265 / 0.8);
+
+    /* Transitions */
+    --ease-out: 0.15s ease-out;
+    --ease-view: 0.2s ease-out;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Layout
+   -------------------------------------------------------------------------- */
+@layer layout {
+  .app {
+    min-height: 100vh;
+    font-family: var(--font-sans);
+    background: radial-gradient(ellipse 80% 50% at 50% 0%, var(--color-bg-elevated), var(--color-bg-base));
+    color: var(--color-text);
+  }
+
+  .nav {
+    padding: var(--space-4) var(--space-6);
+    border-bottom: 1px solid var(--color-surface-border);
+    display: flex;
+    align-items: center;
+    gap: var(--space-6);
+
+    & a {
+      color: var(--color-text);
+      text-decoration: none;
+      font-weight: 600;
+
+      &.nav__admin {
+        color: var(--color-text-muted);
+        font-size: var(--text-sm);
+        font-weight: 400;
+      }
+    }
+  }
+
+  .page {
+    container-type: inline-size;
+    container-name: page;
+    max-width: 42rem;
+    margin-inline: auto;
+    padding: var(--space-6);
+  }
+
+  /* Subgrid: page sections that share column alignment */
+  .page__sections {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+
+    @container page (min-width: 28rem) {
+      gap: var(--space-6);
+    }
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Components
+   -------------------------------------------------------------------------- */
+@layer components {
+  .kicker {
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-wide);
+    text-transform: uppercase;
+    color: var(--color-accent);
+    margin-bottom: var(--space-2);
+  }
+
+  .page-title {
+    font-size: var(--text-2xl);
+    line-height: var(--leading-tight);
+    margin-bottom: var(--space-2);
+    color: var(--color-text);
+  }
+
+  .page-subtitle {
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+    margin-bottom: var(--space-6);
+  }
+
+  .section {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    background: var(--color-surface);
+    margin-bottom: var(--space-4);
+    color: var(--color-text);
+  }
+
+  .section__title {
+    font-size: var(--text-xl);
+    margin: 0 0 var(--space-2);
+  }
+
+  .section__meta {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: var(--text-base);
+  }
+
+  /* Card list – container query; subgrid so card title/desc rows align across columns */
+  .card-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto auto;
+    gap: var(--space-3);
+  }
+
+  @container page (min-width: 36rem) {
+    .card-list {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .card {
+    grid-row: span 2;
+    display: grid;
+    grid-template-rows: subgrid;
+    align-content: start;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: border-color var(--ease-out), background var(--ease-out);
+  }
+
+  .card:hover,
+  .card:focus-visible {
+    border-color: var(--color-surface-border-hover);
+    background: var(--color-bg-elevated-hover);
+  }
+
+  /* :has() – card that contains a link and is hovered */
+  .card:has(:focus-visible) {
+    border-color: var(--color-focus-ring);
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  .card__title {
+    font-size: var(--text-base);
+    font-weight: 600;
+  }
+
+  .card__desc {
+    margin: var(--space-1) 0 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  /* AI Summary card */
+  .summary-card {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-surface-border);
+    background: var(--color-surface);
+    margin-bottom: var(--space-4);
+    color: var(--color-text);
+  }
+
+  .summary-card__badge {
+    display: inline-block;
+    font-size: var(--text-xs);
+    letter-spacing: var(--tracking-tag);
+    text-transform: uppercase;
+    color: var(--color-success);
+    margin-bottom: var(--space-2);
+  }
+
+  .summary-card__text {
+    margin: 0;
+    line-height: var(--leading-normal);
+  }
+
+  .summary-card__actions {
+    margin-top: var(--space-4);
+  }
+
+  /* Rollout slider row – subgrid participation */
+  .rollout-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+  }
+
+  .rollout-row__label {
+    min-width: 7.5rem;
+    color: var(--color-accent-soft);
+    font-family: var(--font-sans);
+  }
+
+  .rollout-row__input {
+    width: 7.5rem;
+    accent-color: var(--color-accent);
+  }
+
+  .rollout-row__value {
+    font-size: var(--text-sm);
+    color: var(--color-text-subtle);
+    min-width: 2.5rem;
+  }
+
+  .btn {
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+    border: none;
+    background: var(--color-accent);
+    color: oklch(1 0 0);
+    cursor: pointer;
+    font: inherit;
+    transition: opacity var(--ease-out), transform var(--ease-out);
+  }
+
+  .btn:hover:not(:disabled) {
+    opacity: 0.95;
+  }
+
+  .btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+
+  .btn--lg {
+    padding: var(--space-2) var(--space-4);
+  }
+
+  /* Form – :has(:focus-within) for focus ring on container */
+  .form-group {
+    margin-top: var(--space-5);
+  }
+
+  .form-group:has(:focus-within) .form-group__label {
+    color: var(--color-text);
+  }
+
+  .form-group__label {
+    display: block;
+    margin-bottom: var(--space-2);
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .input,
+  .select {
+    margin-right: var(--space-2);
+    padding: var(--space-2) var(--space-2);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--color-surface-border);
+    background: var(--color-bg-base);
+    color: var(--color-text);
+    font: inherit;
+  }
+
+  .input {
+    width: 12.5rem;
+  }
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .feedback-thanks {
+    margin-top: var(--space-4);
+    font-size: var(--text-sm);
+    color: var(--color-success);
+  }
+
+  /* Fallback / error UI */
+  .fallback {
+    padding: var(--space-6);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-error-border);
+    background: oklch(0.2 0.03 280 / 0.6);
+    color: var(--color-text);
+    text-align: center;
+  }
+
+  .fallback__title {
+    font-size: var(--text-lg);
+    margin: 0 0 var(--space-2);
+    color: var(--color-error-soft);
+  }
+
+  .fallback__message {
+    margin: 0;
+    font-size: var(--text-sm);
+    color: var(--color-text-muted);
+  }
+
+  .fallback__retry {
+    margin-top: var(--space-4);
+  }
+
+  /* Back link */
+  .back-link {
+    display: inline-block;
+    margin-bottom: var(--space-4);
+    color: var(--color-text-muted);
+    text-decoration: none;
+    font-size: var(--text-sm);
+  }
+
+  .back-link:hover {
+    color: var(--color-text);
+  }
+
+  /* Admin metrics list – subgrid for alignment with flag rows */
+  .metrics-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    & li {
+      margin-bottom: var(--space-1);
+    }
+
+    & code {
+      color: var(--color-accent-soft);
+    }
+
+    & .metrics-list__total {
+      margin-top: var(--space-2);
+      font-weight: 600;
+    }
+  }
+
+  .flags-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+}
+
+/* --------------------------------------------------------------------------
+   Utilities
+   -------------------------------------------------------------------------- */
+@layer utilities {
+  .text-muted {
+    color: var(--color-text-muted);
+  }
+
+  .text-error {
+    color: var(--color-error);
+  }
+
+  .text-success {
+    color: var(--color-success);
+  }
+
+  .loading {
+    color: var(--color-text-muted);
+  }
+}
+
+/* --------------------------------------------------------------------------
+   View Transitions (progressive enhancement)
+   -------------------------------------------------------------------------- */
+@supports (view-transition-name: none) {
+  .view-transition-main {
+    view-transition-name: main-content;
+  }
+
+  ::view-transition-old(main-content) {
+    animation: vt-fade-out 0.2s ease-out forwards;
+  }
+
+  ::view-transition-new(main-content) {
+    animation: vt-fade-in 0.2s ease-out forwards;
+  }
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
